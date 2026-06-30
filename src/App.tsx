@@ -263,7 +263,7 @@ export default function App() {
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        {currentSection === "terminal" ? (
+        {!showIntro && currentSection === "terminal" ? (
           <motion.section key="terminal" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="section-screen flex min-h-[calc(100vh-92px)] items-center justify-center px-4 py-8 md:px-10">
             <AnimatedTerminal onComplete={handleTerminalComplete} />
           </motion.section>
