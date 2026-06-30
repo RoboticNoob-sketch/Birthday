@@ -1,18 +1,10 @@
 import { motion } from "framer-motion";
-import { useEffect } from "react";
 
 interface IntroCinematicProps {
   onFinish?: () => void;
 }
 
 export function IntroCinematic({ onFinish }: IntroCinematicProps) {
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      onFinish?.();
-    }, 4800);
-    return () => window.clearTimeout(timer);
-  }, [onFinish]);
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
       <motion.div
