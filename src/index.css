@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #f8fbff;
+  background: #020712;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background: radial-gradient(circle at top left, rgba(93, 173, 226, 0.18), transparent 25%),
+    radial-gradient(circle at bottom right, rgba(212, 175, 55, 0.16), transparent 24%),
+    linear-gradient(180deg, #020712 0%, #071b33 36%, #0f3a6b 100%);
+  color: #f8fbff;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+button {
+  font: inherit;
+}
+
+.starfield {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.95) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.6) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.35) 1px, transparent 1px);
+  background-size: 220px 220px, 340px 340px, 520px 520px;
+  background-position: 0 0, 40px 90px, 180px 240px;
+  opacity: 0.7;
+  animation: drift 16s linear infinite;
+}
+
+.section-screen {
+  position: relative;
+  isolation: isolate;
+}
+
+.section-screen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.12), transparent 65%);
+  filter: blur(28px);
+  opacity: 0.5;
+  z-index: -1;
+}
+
+.candle-flame {
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  width: 18px;
+  height: 34px;
+  background: radial-gradient(circle at 30% 20%, #fff7b8, #ffd36d 45%, #ff9e3d 70%, transparent 72%);
+  border-radius: 999px 999px 50% 50%;
+  transform: translateX(-50%);
+  animation: flicker 0.75s ease-in-out infinite alternate;
+  box-shadow: 0 0 18px rgba(255, 195, 89, 0.35);
+}
+
+.candle-smoke {
+  position: absolute;
+  left: 50%;
+  top: -10px;
+  width: 28px;
+  height: 54px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent);
+  border-radius: 999px;
+  filter: blur(8px);
+  opacity: 0.55;
+  animation: smoke 2.4s ease-out infinite;
+}
+
+@keyframes drift {
+  from {
+    transform: translateY(0px);
+  }
+  to {
+    transform: translateY(18px);
+  }
+}
+
+@keyframes flicker {
+  from {
+    transform: translateX(-50%) scale(0.95);
+  }
+  to {
+    transform: translateX(-50%) scale(1.06);
+  }
+}
+
+@keyframes smoke {
+  0% {
+    opacity: 0.1;
+    transform: translateX(-50%) translateY(8px) scale(0.9);
+  }
+  100% {
+    opacity: 0.45;
+    transform: translateX(-50%) translateY(-22px) scale(1.12);
+  }
+}
