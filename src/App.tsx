@@ -1,21 +1,22 @@
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { SoundControl } from "./components/SoundControl.tsx";
-import { AnimatedTerminal } from "./components/AnimatedTerminal.tsx";
-import { BirthdayHero } from "./components/BirthdayHero.tsx";
-import { CakeStage } from "./components/CakeStage.tsx";
-import { DinoWorld } from "./components/DinoWorld.tsx";
 import { HiddenTerminal } from "./components/HiddenTerminal.tsx";
-import { LetterCard } from "./components/LetterCard.tsx";
-import { MemoryShowcase } from "./components/MemoryShowcase.tsx";
-import { StoryScene } from "./components/StoryScene.tsx";
-import { TimelineJourney } from "./components/TimelineJourney.tsx";
+import { IntroCinematic } from "./components/IntroCinematic.tsx";
 import { useKonami } from "./hooks/useKonami.ts";
 import { useSound } from "./hooks/useSound.ts";
 import { celebrate, fireworks } from "./utils/confetti.ts";
-import { IntroCinematic } from "./components/IntroCinematic.tsx";
-import { MikaelStats } from "./components/MikaelStats.tsx";
-import { WishesBoard } from "./components/WishesBoard.tsx";
+
+const AnimatedTerminal = lazy(() => import("./components/AnimatedTerminal.tsx").then(m => ({ default: m.AnimatedTerminal })));
+const BirthdayHero     = lazy(() => import("./components/BirthdayHero.tsx").then(m => ({ default: m.BirthdayHero })));
+const CakeStage        = lazy(() => import("./components/CakeStage.tsx").then(m => ({ default: m.CakeStage })));
+const DinoWorld        = lazy(() => import("./components/DinoWorld.tsx").then(m => ({ default: m.DinoWorld })));
+const LetterCard       = lazy(() => import("./components/LetterCard.tsx").then(m => ({ default: m.LetterCard })));
+const MemoryShowcase   = lazy(() => import("./components/MemoryShowcase.tsx").then(m => ({ default: m.MemoryShowcase })));
+const MikaelStats      = lazy(() => import("./components/MikaelStats.tsx").then(m => ({ default: m.MikaelStats })));
+const StoryScene       = lazy(() => import("./components/StoryScene.tsx").then(m => ({ default: m.StoryScene })));
+const TimelineJourney  = lazy(() => import("./components/TimelineJourney.tsx").then(m => ({ default: m.TimelineJourney })));
+const WishesBoard      = lazy(() => import("./components/WishesBoard.tsx").then(m => ({ default: m.WishesBoard })));
 
 const sections = [
   "terminal",
@@ -184,6 +185,25 @@ export default function App() {
     }
   };
 
+  // Auto-blow the candle after 10 s so passive / demo viewers don't get stuck
+  useEffect(() => {
+    if (currentSection !== "cake" || cakeBlown) return;
+    const timer = window.setTimeout(() => handleCakeBlow(), 10000);
+    return () => window.clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentSection, cakeBlown]);
+
+  // Touch-swipe navigation
+  const touchStartX = useRef<number>(0);
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const delta = touchStartX.current - e.changedTouches[0].clientX;
+    if (delta > 50) handleNext();
+    else if (delta < -50) handlePrev();
+  };
+
   return (
     <div className="app-shell relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(93,173,226,0.16),_transparent_25%),radial-gradient(circle_at_bottom_right,_rgba(212,175,55,0.12),_transparent_20%),linear-gradient(180deg,_#020712_0%,_#071b33_36%,_#0f3a6b_100%)] text-white">
       {showIntro ? (
@@ -234,7 +254,12 @@ export default function App() {
         ) : null}
       </div>
 
-      <div className="relative z-20 mx-auto mt-6 max-w-[1200px] px-5 pb-16 md:px-10">
+      <Suspense fallback={<div className="flex min-h-[60vh] items-center justify-center"><span className="text-white/40 text-sm tracking-widest uppercase">Loading…</span></div>}>
+      <div
+        className="relative z-20 mx-auto mt-6 max-w-[1200px] px-5 pb-24 md:px-10"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         {currentSection === "terminal" ? (
           <motion.section key="terminal" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="section-screen flex min-h-[calc(100vh-92px)] items-center justify-center px-4 py-8 md:px-10">
             <AnimatedTerminal onComplete={handleTerminalComplete} />
@@ -338,17 +363,18 @@ export default function App() {
           </motion.section>
         ) : null}
       </div>
+      </Suspense>
 
       <HiddenTerminal visible={showHiddenTerminal} />
 
-      {!showIntro && currentSection !== "cake" ? (
-        <div className="fixed bottom-6 left-1/2 z-40 -translate-x-1/2 flex items-center gap-3">
+      {!showIntro && currentSection !== "cake" && currentSection !== "ending" ? (
+        <div className="fixed bottom-6 left-1/2 z-40 -translate-x-1/2 flex items-center gap-3" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
           {activeIndex > 0 ? (
             <motion.button
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               onClick={handlePrev}
-              className="flex items-center gap-2 rounded-full border border-white/15 bg-slate-950/90 px-5 py-2.5 text-sm font-semibold text-white shadow-glass backdrop-blur-xl transition hover:bg-slate-800/90"
+              className="flex items-center gap-2 rounded-full border border-white/15 bg-slate-950/90 px-5 py-3 text-sm font-semibold text-white shadow-glass backdrop-blur-xl transition active:scale-95 hover:bg-slate-800/90 min-w-[80px] justify-center"
             >
               ← Prev
             </motion.button>
@@ -358,7 +384,7 @@ export default function App() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               onClick={handleNext}
-              className="flex items-center gap-2 rounded-full bg-gold px-6 py-2.5 text-sm font-semibold text-navy shadow-[0_8px_32px_rgba(212,175,55,0.3)] transition hover:scale-105"
+              className="flex items-center gap-2 rounded-full bg-gold px-6 py-3 text-sm font-semibold text-navy shadow-[0_8px_32px_rgba(212,175,55,0.3)] transition active:scale-95 hover:scale-105 min-w-[80px] justify-center"
             >
               Next →
             </motion.button>

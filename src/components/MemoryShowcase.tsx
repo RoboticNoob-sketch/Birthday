@@ -1,5 +1,5 @@
 ﻿import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const PHOTOS = [
   { label: "First Smile", src: "/assets/photos/photo-1.jpg" },
@@ -33,9 +33,25 @@ export function MemoryShowcase() {
     return () => window.clearInterval(timer);
   }, []);
 
+  // Preload the next photo so transitions are instant
+  useEffect(() => {
+    const nextSrc = PHOTOS[(index + 1) % PHOTOS.length].src;
+    const img = new Image();
+    img.src = nextSrc;
+  }, [index]);
+
   const goTo = (next: number, dir: number) => {
     setDirection(dir);
     setIndex((next + PHOTOS.length) % PHOTOS.length);
+  };
+
+  // Touch swipe support
+  const touchStartX = useRef<number>(0);
+  const handleTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const delta = touchStartX.current - e.changedTouches[0].clientX;
+    if (delta > 40) goTo(index + 1, 1);
+    else if (delta < -40) goTo(index - 1, -1);
   };
 
   const photo = PHOTOS[index];
@@ -59,7 +75,11 @@ export function MemoryShowcase() {
       </div>
 
       <div className="relative mx-4 mb-4 overflow-hidden rounded-[28px] bg-slate-950/80 md:mx-8">
-        <div className="relative h-[55vh] min-h-[320px] max-h-[600px] w-full overflow-hidden">
+        <div
+          className="relative h-[55vh] min-h-[320px] max-h-[600px] w-full overflow-hidden"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
           <AnimatePresence mode="wait" initial={false}>
             <motion.img
               key={photo.src}
