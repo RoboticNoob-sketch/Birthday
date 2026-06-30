@@ -13,6 +13,12 @@ const PHOTOS = [
   { label: "Tiny Explorer", src: "/assets/photos/photo-9.jpg" },
   { label: "Birthday Glow", src: "/assets/photos/photo-10.jpg" },
   { label: "My Favorite Year", src: "/assets/photos/photo-11.jpg" },
+  { label: "Growing Up", src: "/assets/photos/photo-12.jpg" },
+  { label: "Pure Joy", src: "/assets/photos/photo-13.jpg" },
+  { label: "Unforgettable", src: "/assets/photos/photo-14.jpg" },
+  { label: "Our Sunshine", src: "/assets/photos/photo-15.jpg" },
+  { label: "Best Moments", src: "/assets/photos/photo-16.jpg" },
+  { label: "Always Loved", src: "/assets/photos/photo-17.jpg" },
 ];
 
 export function MemoryShowcase() {
