@@ -115,15 +115,27 @@ export function MemoryShowcase({ onComplete }: { onComplete?: () => void }) {
           onTouchEnd={handleTouchEnd}
         >
           <AnimatePresence mode="wait" initial={false}>
+            {/* Blurred backdrop — fills the frame for portrait photos */}
+            <motion.img
+              key={`bg-${photo.src}`}
+              src={photo.src}
+              aria-hidden
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              className="absolute inset-0 h-full w-full object-cover scale-110 blur-2xl brightness-50"
+            />
+            {/* Main photo — fully visible, no crop */}
             <motion.img
               key={photo.src}
               src={photo.src}
               alt={photo.label}
-              initial={{ opacity: 0, scale: 1.06 }}
+              initial={{ opacity: 0, scale: 1.04 }}
               animate={{ opacity: 1, scale: 1.0 }}
-              exit={{ opacity: 0, scale: 0.97 }}
-              transition={{ duration: 0.65, ease: "easeOut" }}
-              className="absolute inset-0 h-full w-full object-cover"
+              exit={{ opacity: 0, scale: 0.98 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              className="absolute inset-0 h-full w-full object-contain"
             />
           </AnimatePresence>
 
