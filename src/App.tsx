@@ -342,14 +342,6 @@ export default function App() {
                     If this made you smile, share it with a parent, a friend, or anyone who knows what it feels like to love someone this much.
                   </p>
                   <div className="mt-5 flex flex-wrap justify-center gap-3">
-                    <a
-                      href={`https://wa.me/?text=${encodeURIComponent("Happy 3rd Birthday Mikael 🎉 Made with love by Mom & Dad — " + window.location.href)}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="rounded-full border border-white/15 bg-white/10 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
-                    >
-                      Share on WhatsApp
-                    </a>
                     <button
                       type="button"
                       onClick={() => navigator.clipboard?.writeText(window.location.href)}
