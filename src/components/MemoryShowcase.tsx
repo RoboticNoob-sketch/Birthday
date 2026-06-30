@@ -21,17 +21,33 @@ const PHOTOS = [
   { label: "Always Loved", src: "/assets/photos/photo-17.jpg" },
 ];
 
-export function MemoryShowcase() {
+export function MemoryShowcase({ onComplete }: { onComplete?: () => void }) {
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(1);
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
+  const completedRef = useRef(false);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
       setDirection(1);
-      setIndex((current) => (current + 1) % PHOTOS.length);
+      setIndex((current) => {
+        if (current >= PHOTOS.length - 1) return current; // hold on last photo
+        return current + 1;
+      });
     }, 5000);
     return () => window.clearInterval(timer);
   }, []);
+
+  // When last photo is reached, wait 5 s then advance section
+  useEffect(() => {
+    if (index !== PHOTOS.length - 1 || completedRef.current) return;
+    const timer = window.setTimeout(() => {
+      completedRef.current = true;
+      onCompleteRef.current?.();
+    }, 5000);
+    return () => window.clearTimeout(timer);
+  }, [index]);
 
   // Preload the next photo so transitions are instant
   useEffect(() => {

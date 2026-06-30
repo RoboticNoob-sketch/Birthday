@@ -94,7 +94,7 @@ export default function App() {
       return;
     }
 
-    if (autoPaused || currentSection === "terminal" || currentSection === "cake" || currentSection === "ending") {
+    if (autoPaused || currentSection === "terminal" || currentSection === "cake" || currentSection === "memories" || currentSection === "ending") {
       return;
     }
 
@@ -289,7 +289,7 @@ export default function App() {
 
         {currentSection === "memories" ? (
           <motion.section key="memories" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="section-screen flex min-h-[calc(100vh-92px)] items-center justify-center px-4 py-8 md:px-10">
-            <MemoryShowcase />
+            <MemoryShowcase onComplete={() => setActiveIndex((c) => Math.min(c + 1, sections.length - 1))} />
           </motion.section>
         ) : null}
 
