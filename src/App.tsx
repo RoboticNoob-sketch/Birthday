@@ -73,6 +73,7 @@ export default function App() {
   const [musicEnabled, setMusicEnabled] = useState(true);
   const [readyToPlay, setReadyToPlay] = useState(false);
   const [terminalDone, setTerminalDone] = useState(false);
+  const [autoPaused, setAutoPaused] = useState(false);
 
   const currentSection = sections[activeIndex];
   const { enabled, toggleMusic, playSound } = useSound(musicEnabled, readyToPlay);
@@ -93,7 +94,7 @@ export default function App() {
       return;
     }
 
-    if (currentSection === "terminal" || currentSection === "cake") {
+    if (autoPaused || currentSection === "terminal" || currentSection === "cake" || currentSection === "ending") {
       return;
     }
 
@@ -102,7 +103,7 @@ export default function App() {
     }, sectionDurations[currentSection]);
 
     return () => window.clearTimeout(timeout);
-  }, [currentSection, showIntro]);
+  }, [currentSection, showIntro, autoPaused]);
 
   useEffect(() => {
     if (dinoClicks < 10) {
@@ -174,6 +175,7 @@ export default function App() {
   const handleNext = () => {
     if (activeIndex < sections.length - 1) {
       playSound("click");
+      setAutoPaused(true);
       setActiveIndex((current) => current + 1);
     }
   };
@@ -181,6 +183,7 @@ export default function App() {
   const handlePrev = () => {
     if (activeIndex > 0) {
       playSound("click");
+      setAutoPaused(true);
       setActiveIndex((current) => current - 1);
     }
   };
@@ -233,7 +236,7 @@ export default function App() {
                 key={s}
                 type="button"
                 title={sectionLabels[s]}
-                onClick={() => { playSound("click"); setActiveIndex(i); }}
+                onClick={() => { playSound("click"); setAutoPaused(true); setActiveIndex(i); }}
                 className={`h-2 rounded-full transition-all duration-300 ${
                   i === activeIndex
                     ? "w-6 bg-gold"
@@ -358,6 +361,26 @@ export default function App() {
                 </div>
 
                 <p className="text-sm text-slate-400">Made with love by Mom &amp; Dad · Mikael turns 3 · July 1st, 2026</p>
+
+                {/* Revisit any section */}
+                <div className="border-t border-white/10 pt-6">
+                  <p className="mb-4 text-xs uppercase tracking-[0.3em] text-gold">Revisit a moment</p>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    {sections.filter(s => s !== "ending").map((s, _i) => {
+                      const i = sections.indexOf(s);
+                      return (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => { playSound("click"); setAutoPaused(true); setActiveIndex(i); }}
+                          className="rounded-[16px] border border-white/10 bg-white/5 px-3 py-2.5 text-xs font-semibold text-slate-200 transition hover:bg-white/15 active:scale-95"
+                        >
+                          {sectionLabels[s]}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </motion.div>
             </div>
           </motion.section>
@@ -368,7 +391,18 @@ export default function App() {
       <HiddenTerminal visible={showHiddenTerminal} />
 
       {!showIntro && currentSection !== "cake" && currentSection !== "ending" ? (
-        <div className="fixed bottom-6 left-1/2 z-40 -translate-x-1/2 flex items-center gap-3" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+        <div className="fixed bottom-6 left-1/2 z-40 -translate-x-1/2 flex flex-col items-center gap-2" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+          {autoPaused ? (
+            <motion.button
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              onClick={() => setAutoPaused(false)}
+              className="rounded-full border border-gold/30 bg-slate-950/80 px-4 py-1.5 text-xs font-semibold text-gold backdrop-blur-xl transition hover:bg-gold/10"
+            >
+              ▶ Resume autoplay
+            </motion.button>
+          ) : null}
+          <div className="flex items-center gap-3">
           {activeIndex > 0 ? (
             <motion.button
               initial={{ opacity: 0, y: 8 }}
@@ -389,6 +423,7 @@ export default function App() {
               Next →
             </motion.button>
           ) : null}
+          </div>
         </div>
       ) : null}
 
