@@ -112,7 +112,7 @@ export default function App() {
 
     setTinyDino(true);
     playSound("sparkle");
-    setToastMessage("Rawr! Daddy loves you!");
+    setToastMessage("🦖 Mikael is SO happy right now! This is his favourite part! 🌟");
 
     const timer = window.setTimeout(() => {
       setToastMessage(null);

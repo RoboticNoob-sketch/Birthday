@@ -51,7 +51,7 @@ export function DinoWorld({ onDinoClick }: DinoWorldProps) {
               exit={{ opacity: 0 }}
               className="text-gold font-bold text-lg"
             >
-              {roarCount < 3 ? "Rawr! 🦖" : roarCount < 6 ? "RAAWR!! 🦕💥" : "MIKAEL APPROVES!! 🌟🦖🌟"}
+              {roarCount < 3 ? "Rawr! I'm a T-Rex! 🦖" : roarCount < 6 ? "RAAWR!! Mikael loves dinosaurs!! 🦕💥" : "🌟 This is Mikael's FAVOURITE thing EVER!! 🦖🌟"}
             </motion.p>
           ) : null}
         </div>
