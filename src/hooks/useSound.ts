@@ -123,29 +123,43 @@ export function useSound(enabled: boolean, ready: boolean) {
     (soundName: keyof typeof SOUND_MAP) => {
       const howl = howlRef.current;
       if (!enabled || !loaded || !audioAvailable) return;
-
       if (soundName === "background") return;
 
+      // Only duck + play if the file actually exists and is non-empty.
+      // Empty placeholder files (0 bytes) will loaderror immediately.
       const originalVol = howl ? howl.volume() : defaultVolume;
-      try {
-        if (howl && howl.playing && howl.playing()) {
-          howl.fade(originalVol, 0.14, 220);
-        }
-      } catch {
-        // ignore fade errors
-      }
+      let restored = false;
 
-      const effect = new Howl({ src: [SOUND_MAP[soundName]], volume: 0.85, html5: true, preload: true });
-      effect.play();
+      const restore = () => {
+        if (restored) return;
+        restored = true;
+        try { if (howl) howl.fade(howl.volume(), originalVol, 500); } catch { /* ignore */ }
+      };
+
+      const effect = new Howl({
+        src: [SOUND_MAP[soundName]],
+        volume: 0.85,
+        html5: true,
+        preload: true,
+      });
+
+      effect.once("load", () => {
+        // File loaded — safe to duck and play
+        try { if (howl && howl.playing()) howl.fade(originalVol, 0.14, 220); } catch { /* ignore */ }
+        effect.play();
+      });
 
       effect.once("end", () => {
-        try {
-          if (howl) howl.fade(0.14, originalVol, 600);
-        } catch {
-          // ignore
-        }
+        restore();
         effect.unload();
       });
+
+      // If file is missing or empty, restore immediately
+      effect.once("loaderror", () => { restore(); effect.unload(); });
+      effect.once("playerror", () => { restore(); effect.unload(); });
+
+      // Safety net: always restore after 6 s regardless
+      window.setTimeout(restore, 6000);
     },
     [audioAvailable, enabled, loaded],
   );
