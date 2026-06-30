@@ -27,12 +27,14 @@ export function MemoryShowcase({ onComplete }: { onComplete?: () => void }) {
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
   const completedRef = useRef(false);
+  const activeThumbnailRef = useRef<HTMLButtonElement>(null);
+  const stripRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
       setDirection(1);
       setIndex((current) => {
-        if (current >= PHOTOS.length - 1) return current; // hold on last photo
+        if (current >= PHOTOS.length - 1) return current;
         return current + 1;
       });
     }, 5000);
@@ -49,16 +51,22 @@ export function MemoryShowcase({ onComplete }: { onComplete?: () => void }) {
     return () => window.clearTimeout(timer);
   }, [index]);
 
-  // Preload the next photo so transitions are instant
+  // Preload next photo
   useEffect(() => {
     const nextSrc = PHOTOS[(index + 1) % PHOTOS.length].src;
     const img = new Image();
     img.src = nextSrc;
   }, [index]);
 
+  // Scroll active thumbnail into view
+  useEffect(() => {
+    activeThumbnailRef.current?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+  }, [index]);
+
   const goTo = (next: number, dir: number) => {
+    const clamped = Math.max(0, Math.min(PHOTOS.length - 1, (next + PHOTOS.length) % PHOTOS.length));
     setDirection(dir);
-    setIndex((next + PHOTOS.length) % PHOTOS.length);
+    setIndex(clamped);
   };
 
   // Touch swipe support
@@ -77,22 +85,32 @@ export function MemoryShowcase({ onComplete }: { onComplete?: () => void }) {
       <div className="absolute -left-10 top-10 h-32 w-32 rounded-full bg-gold/20 blur-3xl" />
       <div className="absolute -right-10 bottom-16 h-32 w-32 rounded-full bg-sky-300/15 blur-3xl" />
 
-      <div className="p-8 md:p-10">
-        <div className="flex items-start justify-between gap-4">
+      {/* Header */}
+      <div className="p-6 md:p-8">
+        <div className="flex items-center justify-between gap-4">
           <div>
             <p className="text-sm uppercase tracking-[0.35em] text-gold">Photo Memories</p>
-            <h2 className="mt-2 text-4xl font-black tracking-tight text-white md:text-5xl">Three years of Mikael</h2>
-            <p className="mt-2 text-base text-slate-300">Every photo is a moment we never want to forget.</p>
+            <h2 className="mt-1 text-3xl font-black tracking-tight text-white md:text-4xl">Three years of Mikael</h2>
           </div>
-          <div className="shrink-0 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-slate-200">
+          <span className="shrink-0 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-sm font-semibold text-slate-200">
             {index + 1} / {PHOTOS.length}
-          </div>
+          </span>
         </div>
       </div>
 
-      <div className="relative mx-4 mb-4 overflow-hidden rounded-[28px] bg-slate-950/80 md:mx-8">
+      {/* Main photo frame */}
+      <div className="relative mx-4 overflow-hidden rounded-[24px] bg-slate-950 md:mx-6">
+        {/* Progress bar */}
+        <motion.div
+          key={`bar-${index}`}
+          className="absolute top-0 left-0 z-20 h-[3px] bg-gold"
+          initial={{ width: "0%" }}
+          animate={{ width: "100%" }}
+          transition={{ duration: 5, ease: "linear" }}
+        />
+
         <div
-          className="relative h-[55vh] min-h-[320px] max-h-[600px] w-full overflow-hidden"
+          className="relative h-[58vh] min-h-[300px] max-h-[640px] w-full overflow-hidden"
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
@@ -101,35 +119,40 @@ export function MemoryShowcase({ onComplete }: { onComplete?: () => void }) {
               key={photo.src}
               src={photo.src}
               alt={photo.label}
-              initial={{ opacity: 0, x: direction * 60 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: direction * -60 }}
-              transition={{ duration: 0.55, ease: "easeInOut" }}
+              initial={{ opacity: 0, scale: 1.06 }}
+              animate={{ opacity: 1, scale: 1.0 }}
+              exit={{ opacity: 0, scale: 0.97 }}
+              transition={{ duration: 0.65, ease: "easeOut" }}
               className="absolute inset-0 h-full w-full object-cover"
             />
           </AnimatePresence>
-          <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-slate-950/90 to-transparent" />
-          <div className="absolute bottom-5 left-0 right-0 flex items-center justify-between px-6">
-            <motion.p
+
+          {/* Bottom gradient + caption + arrows */}
+          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/80 to-transparent" />
+          <div className="absolute bottom-0 inset-x-0 flex items-end justify-between px-5 pb-5">
+            <motion.div
               key={photo.label}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-base font-semibold text-white"
+              transition={{ duration: 0.4 }}
             >
-              {photo.label}
-            </motion.p>
+              <p className="text-base font-bold text-white drop-shadow">{photo.label}</p>
+              <p className="text-xs text-white/60">Mikael · July 2023 – July 2026</p>
+            </motion.div>
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => goTo(index - 1, -1)}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-sm transition hover:bg-white/20"
+                disabled={index === 0}
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-black/50 text-lg text-white backdrop-blur-sm transition hover:bg-white/20 disabled:opacity-30"
               >
                 ‹
               </button>
               <button
                 type="button"
                 onClick={() => goTo(index + 1, 1)}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-sm transition hover:bg-white/20"
+                disabled={index === PHOTOS.length - 1}
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-black/50 text-lg text-white backdrop-blur-sm transition hover:bg-white/20 disabled:opacity-30"
               >
                 ›
               </button>
@@ -138,18 +161,36 @@ export function MemoryShowcase({ onComplete }: { onComplete?: () => void }) {
         </div>
       </div>
 
-      <div className="flex justify-center gap-2 pb-8">
-        {PHOTOS.map((_, i) => (
+      {/* Thumbnail strip */}
+      <div
+        ref={stripRef}
+        className="flex gap-2 overflow-x-auto px-4 py-4 md:px-6"
+        style={{ scrollbarWidth: "none" }}
+      >
+        {PHOTOS.map((p, i) => (
           <button
-            key={i}
+            key={p.src}
+            ref={i === index ? activeThumbnailRef : null}
             type="button"
             onClick={() => goTo(i, i > index ? 1 : -1)}
-            className={`h-1.5 rounded-full transition-all duration-300 ${
-              i === index ? "w-6 bg-gold" : "w-1.5 bg-white/25"
-            }`}
-          />
+            className="relative shrink-0 overflow-hidden rounded-xl transition-all duration-300"
+            style={{ width: 64, height: 64 }}
+          >
+            <img
+              src={p.src}
+              alt={p.label}
+              className="h-full w-full object-cover"
+              loading="lazy"
+            />
+            <div className={`absolute inset-0 rounded-xl transition-all duration-300 ${
+              i === index
+                ? "ring-2 ring-gold ring-offset-1 ring-offset-transparent"
+                : "bg-black/40 hover:bg-black/10"
+            }`} />
+          </button>
         ))}
       </div>
     </div>
   );
 }
+
